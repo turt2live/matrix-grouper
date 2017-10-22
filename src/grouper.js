@@ -11,7 +11,7 @@ let factory = null;
 let botClient = null;
 let db = null;
 
-module.exports = async (opts) => {
+module.exports = (opts) => {
     homeserverConfig = opts.hsConfig;
     registration = AppServiceRegistration.fromObject(opts.appserviceConfig);
     hsDomain = opts.domain;
@@ -36,52 +36,53 @@ module.exports = async (opts) => {
         database: homeserverConfig.database.args.database,
         password: homeserverConfig.database.args.password,
     });
-    await db.connect();
 
-    // Figure out the user prefix
-    let usersPrefix = opts.usersPrefix;
-    if (!usersPrefix) {
-        if (registration.namespaces && registration.namespaces.users && registration.namespaces.users.length > 0) {
-            let regex = registration.namespaces.users[0].regex;
-            if (regex.endsWith(".*")) usersPrefix = regex.substring(0, regex.length - 2);
-            else throw new Error("Cannot determine prefix for users: Unrecognized regex");
-        } else throw new Error("Cannot determine prefix for users: Missing configuration in registration");
-    }
+    db.connect().then(() => {
+        // Figure out the user prefix
+        let usersPrefix = opts.usersPrefix;
+        if (!usersPrefix) {
+            if (registration.namespaces && registration.namespaces.users && registration.namespaces.users.length > 0) {
+                let regex = registration.namespaces.users[0].regex;
+                if (regex.endsWith(".*")) usersPrefix = regex.substring(0, regex.length - 2);
+                else throw new Error("Cannot determine prefix for users: Unrecognized regex");
+            } else throw new Error("Cannot determine prefix for users: Missing configuration in registration");
+        }
 
-    let chain = checkGroupExists(opts.groupId);
+        let chain = checkGroupExists(opts.groupId);
 
-    let beforeGroupingUserCount = 0;
-    let usersFailedGrouping = [];
-    let roomsFailedAssociation = [];
+        let beforeGroupingUserCount = 0;
+        let usersFailedGrouping = [];
+        let roomsFailedAssociation = [];
 
-    if (!opts.skipUsers) {
-        chain = chain.then(() => getGroupedUserCount(opts.groupId, usersPrefix))
-            .then(count => beforeGroupingUserCount = count)
-            .then(() => getUngroupedUsers(opts.groupId, usersPrefix))
-            .then(users => {
-                let chain = Promise.resolve();
-                users.map(u => chain = chain.then(() => {
-                    joinUserToGroup(u, opts.groupId).error(() => usersFailedGrouping.push(u));
-                }));
-                return chain;
-            })
-            .then(() => getGroupedUserCount(opts.groupId, usersPrefix));
-    }
+        if (!opts.skipUsers) {
+            chain = chain.then(() => getGroupedUserCount(opts.groupId, usersPrefix))
+                .then(count => beforeGroupingUserCount = count)
+                .then(() => getUngroupedUsers(opts.groupId, usersPrefix))
+                .then(users => {
+                    let chain = Promise.resolve();
+                    users.map(u => chain = chain.then(() => {
+                        joinUserToGroup(u, opts.groupId).error(() => usersFailedGrouping.push(u));
+                    }));
+                    return chain;
+                })
+                .then(() => getGroupedUserCount(opts.groupId, usersPrefix));
+        }
 
-    if (!opts.skipRooms) {
-        chain = chain.then(() => getJoinedRooms())
-            .then(rooms => {
-                let chain = Promise.resolve();
-                rooms.map(r => chain = chain.then(() => {
-                    tryAssociateRoom(r, opts.groupId).error(() => roomsFailedAssociation.push(r));
-                }));
-                return chain;
-            });
-    }
+        if (!opts.skipRooms) {
+            chain = chain.then(() => getJoinedRooms())
+                .then(rooms => {
+                    let chain = Promise.resolve();
+                    rooms.map(r => chain = chain.then(() => {
+                        tryAssociateRoom(r, opts.groupId).error(() => roomsFailedAssociation.push(r));
+                    }));
+                    return chain;
+                });
+        }
 
-    chain
-        .then(() => db.end())
-        .then(count => printGroupResults(beforeGroupingUserCount, count, usersFailedGrouping, roomsFailedAssociation));
+        chain
+            .then(() => db.end())
+            .then(count => printGroupResults(beforeGroupingUserCount, count, usersFailedGrouping, roomsFailedAssociation));
+    });
 };
 
 function checkGroupExists(groupId) {
