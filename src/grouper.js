@@ -116,7 +116,6 @@ function joinUserToGroup(userId, groupId) {
 }
 
 function getJoinedRooms() {
-    // const path = utils.encodeUri("/create_group");
     return botClient._http.authedRequestWithPrefix(undefined, "GET", "/joined_rooms", undefined, undefined, "/_matrix/client/r0")
         .then(response => {
             if (!response.joined_rooms) return [];

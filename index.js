@@ -55,13 +55,6 @@ const optionDefinitions = [
         typeLabel: "<@_bridged>",
     },
     {
-        name: "roomprefix",
-        alias: "p",
-        type: String,
-        description: "The room prefix to relate groups to. Required if the script cannot determine what the prefix is.",
-        typeLabel: "<#_bridged>",
-    },
-    {
         name: "skip-users",
         type: Boolean,
         description: "If set, the script will not group users (default false)",
@@ -115,5 +108,4 @@ grouper({
     skipUsers: options['skip-users'],
     skipRooms: options['skip-rooms'],
     usersPrefix: options.userprefix,
-    roomsPrefix: options.roomprefix,
 });
