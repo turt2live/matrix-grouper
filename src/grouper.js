@@ -62,7 +62,7 @@ module.exports = (opts) => {
                 .then(users => {
                     let chain = Promise.resolve();
                     users.map(u => chain = chain.then(() => {
-                        joinUserToGroup(u, opts.groupId).error(() => usersFailedGrouping.push(u));
+                        joinUserToGroup(u, opts.groupId).catch(() => usersFailedGrouping.push(u));
                     }));
                     return chain;
                 })
@@ -75,7 +75,7 @@ module.exports = (opts) => {
                 .then(rooms => {
                     let chain = Promise.resolve();
                     rooms.map(r => chain = chain.then(() => {
-                        tryAssociateRoom(r, opts.groupId).error(() => roomsFailedAssociation.push(r));
+                        tryAssociateRoom(r, opts.groupId).catch(() => roomsFailedAssociation.push(r));
                     }));
                     return chain;
                 });
@@ -88,7 +88,7 @@ module.exports = (opts) => {
 };
 
 function checkGroupExists(groupId) {
-    return botClient.getGroupSummary(groupId).error(() => {
+    return botClient.getGroupSummary(groupId).catch(() => {
         console.log("Creating group...");
         return botClient.createGroup({
             localpart: groupId.substring(1).split(':')[0],
@@ -125,7 +125,7 @@ function getJoinedRooms() {
 }
 
 function tryAssociateRoom(roomId, groupId) {
-    return botClient.getStateEvent(roomId, "m.room.related_groups", "").error(() => null).then(event => {
+    return botClient.getStateEvent(roomId, "m.room.related_groups", "").catch(() => null).then(event => {
         let relatedGroups = [];
         if (event) relatedGroups = event.groups;
         if (relatedGroups.indexOf(groupId) === -1) {
