@@ -51,6 +51,7 @@ module.exports = (opts) => {
         let chain = checkGroupExists(opts.groupId);
 
         let beforeGroupingUserCount = 0;
+        let afterGroupingUserCount = 0;
         let usersFailedGrouping = [];
         let roomsFailedAssociation = [];
 
@@ -65,7 +66,8 @@ module.exports = (opts) => {
                     }));
                     return chain;
                 })
-                .then(() => getGroupedUserCount(opts.groupId, usersPrefix));
+                .then(() => getGroupedUserCount(opts.groupId, usersPrefix))
+                .then(count => afterGroupingUserCount = count);
         }
 
         if (!opts.skipRooms) {
@@ -81,7 +83,7 @@ module.exports = (opts) => {
 
         chain
             .then(() => db.end())
-            .then(count => printGroupResults(beforeGroupingUserCount, count, usersFailedGrouping, roomsFailedAssociation));
+            .then(() => printGroupResults(beforeGroupingUserCount, afterGroupingUserCount, usersFailedGrouping, roomsFailedAssociation));
     });
 };
 
