@@ -9,8 +9,8 @@ This application is lightly tested, uses unstable APIs, and directly accesses th
 # Requirements
 
 * A Synapse homeserver
-* Postgresql as the database for Synapse
-* NodeJS 8.7.0 or higher
+* PostgreSQL as the database for Synapse
+* NodeJS 6.11.0 or higher
 * A bridge to group
 
 # Usage
