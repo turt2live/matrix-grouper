@@ -123,8 +123,13 @@ function getJoinedRooms() {
 }
 
 function tryAssociateRoom(roomId, groupId) {
-    return botClient.getStateEvent(roomId, "m.room.related_groups", "").then(event => {
-        console.log(event);
+    return botClient.getStateEvent(roomId, "m.room.related_groups", "").error(() => null).then(event => {
+        let relatedGroups = [];
+        if (event) relatedGroups = event.groups;
+        if (relatedGroups.indexOf(groupId) === -1) {
+            relatedGroups.push(groupId);
+            return botClient.sendStateEvent(roomId, "m.room.related_groups", {groups: relatedGroups}, "");
+        }
     });
 }
 
