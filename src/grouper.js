@@ -16,7 +16,7 @@ module.exports = (opts) => {
     registration = AppServiceRegistration.fromObject(opts.appserviceConfig);
     hsDomain = opts.domain;
 
-    if (!groupId.endsWith(":" + opts.domain)) {
+    if (!opts.groupId.endsWith(":" + opts.domain)) {
         throw new Error("Group ID must be local to the homeserver");
     }
 
