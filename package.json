@@ -18,7 +18,7 @@
     "command-line-args": "^4.0.7",
     "command-line-usage": "^4.0.1",
     "js-yaml": "^3.10.0",
-    "matrix-appservice-bridge": "^1.4.0-a",
+    "matrix-appservice-bridge": "git://github.com/turt2live/matrix-appservice-bridge.git#travis/auto-group",
     "matrix-js-sdk": "git://github.com/turt2live/matrix-js-sdk.git#travis/babel-runtime-built",
     "pg": "^7.3.0"
   }
