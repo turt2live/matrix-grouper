@@ -62,7 +62,7 @@ module.exports = (opts) => {
                 .then(users => {
                     let chain = Promise.resolve();
                     users.map(u => chain = chain.then(() => {
-                        joinUserToGroup(u, opts.groupId).catch(() => usersFailedGrouping.push(u));
+                        return joinUserToGroup(u, opts.groupId).catch(() => usersFailedGrouping.push(u));
                     }));
                     return chain;
                 })
@@ -75,7 +75,7 @@ module.exports = (opts) => {
                 .then(rooms => {
                     let chain = Promise.resolve();
                     rooms.map(r => chain = chain.then(() => {
-                        tryAssociateRoom(r, opts.groupId).catch(() => roomsFailedAssociation.push(r));
+                        return tryAssociateRoom(r, opts.groupId).catch(() => roomsFailedAssociation.push(r));
                     }));
                     return chain;
                 });
