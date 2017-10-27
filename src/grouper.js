@@ -55,7 +55,22 @@ module.exports = (opts) => {
         let usersFailedGrouping = [];
         let roomsFailedAssociation = [];
 
-        if (!opts.skipUsers) {
+        if (opts.vacate) {
+            chain = chain.then(() => getGroupedUserCount(opts.groupId, usersPrefix))
+                .then(count => beforeGroupingUserCount = count)
+                .then(() => getGroupedUsers(opts.groupId, usersPrefix))
+                .then(users => {
+                    let chain = Promise.resolve();
+                    users.map(u => chain = chain.then(() => {
+                        return leaveUserFromGroup(u, opts.groupId).catch(() => usersFailedGrouping.push(u));
+                    }));
+                    return chain;
+                })
+                .then(() => getGroupedUserCount(opts.groupId, usersPrefix))
+                .then(count => afterGroupingUserCount = count);
+        }
+
+        if (!opts.vacate && !opts.skipUsers) {
             chain = chain.then(() => getGroupedUserCount(opts.groupId, usersPrefix))
                 .then(count => beforeGroupingUserCount = count)
                 .then(() => getUngroupedUsers(opts.groupId, usersPrefix))
@@ -70,7 +85,7 @@ module.exports = (opts) => {
                 .then(count => afterGroupingUserCount = count);
         }
 
-        if (!opts.skipRooms) {
+        if (!opts.vacate && !opts.skipRooms) {
             chain = chain.then(() => getJoinedRooms())
                 .then(rooms => {
                     let chain = Promise.resolve();
@@ -107,12 +122,23 @@ function getUngroupedUsers(groupId, usersPrefix) {
     return db.query(query, [usersPrefix + "%", groupId]).then(result => result.rows.map(r => r.userid));
 }
 
+function getGroupedUsers(groupId, usersPrefix) {
+    let query = "select group_users.user_id as userid from group_users where group_users.user_id like $1 and group_users.group_id = $2";
+    return db.query(query, [usersPrefix + "%", groupId]).then(result => result.rows.map(r => r.userid));
+}
+
 function joinUserToGroup(userId, groupId) {
     console.log("Adding " + userId + " to " + groupId);
     const userClient = factory.getClientAs(userId);
     return botClient.inviteUserToGroup(groupId, userId)
         .then(() => userClient.acceptGroupInvite(groupId))
         .then(() => userClient.setGroupPublicity(groupId, true));
+}
+
+function leaveUserFromGroup(userId, groupId) {
+    console.log("Removing " + userId + " from " + groupId);
+    const userClient = factory.getClientAs(userId);
+    return userClient.leaveGroup(groupId);
 }
 
 function getJoinedRooms() {

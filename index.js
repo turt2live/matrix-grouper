@@ -66,6 +66,12 @@ const optionDefinitions = [
         description: "If set, the script will not relate groups in rooms (default false)",
         defaultValue: false,
     },
+    {
+        name: "vacate",
+        type: Boolean,
+        description: "If set, causes the group to be vacated instead",
+        defaultValue: false,
+    }
 ];
 
 const options = cmdLineArgs(optionDefinitions);
@@ -108,4 +114,5 @@ grouper({
     skipUsers: options['skip-users'],
     skipRooms: options['skip-rooms'],
     usersPrefix: options.userprefix,
+    vacate: options.vacate,
 });
