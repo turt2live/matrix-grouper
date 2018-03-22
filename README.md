@@ -2,6 +2,10 @@
 
 Organizes Synapse bridged users to groups.
 
+# Inactive
+
+This project has since been replaced by the use of [synapse-plugin-relate-groups](https://github.com/turt2live/synapse-plugin-relate-groups). 
+
 # ⚠️ Use at your own risk ⚠️
 
 This application is lightly tested, uses unstable APIs, and directly accesses the Synapse database. It is strongly recommended to not run this in a production environment without extensive testing and backups. **Use this application at your own risk.**
